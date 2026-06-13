@@ -1,102 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
 const Navigation = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
 
   const navItems = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About" },
-    { id: "services", label: "Services" },
-    { id: "dishes", label: "Dishes" },
-    { id: "products", label: "Products" },
-    { id: "FoodCategories", label: "Categories" },
-    { id: "gallery", label: "Gallery" },
-    { id: "enquiry", label: "Enquiry" },
-    { id: "reviews", label: "Reviews" },
+    { path: "/", label: "Home" },
+    { path: "/about", label: "About" },
+    { path: "/services", label: "Services" },
+    { path: "/products", label: "Products" },
+    { path: "/foodcategories", label: "FoodCategories" },
+    { path: "/gallerycarousel", label: "GalleryCarousel" },
+    { path: "/enquiry", label: "Enquiry" },
+    { path: "/reviews", label: "Reviews" },
   ];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-
-      navItems.forEach((item) => {
-        const section = document.getElementById(item.id);
-        if (section) {
-          const top = section.getBoundingClientRect().top;
-          if (top <= 100 && top >= -section.offsetHeight + 100) {
-            setActiveSection(item.id);
-          }
-        }
-      });
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setIsMobileMenuOpen(false);
-    }
-  };
-
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-[#FFF9E6]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(150,100,0,0.15)]"
-          : "bg-[#FFF9E6]"
-      }`}
-    >
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FFF9E6] shadow-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
+
           {/* Logo */}
-          <div
-            className="flex items-center gap-2 cursor-pointer group"
-            onClick={() => scrollToSection("home")}
-          >
+          <NavLink to="/" className="flex items-center gap-2 group">
             <img
               src={logo}
-              alt="Shree Prakaram Logo"
-              className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110 floating"
+              alt="Logo"
+              className="h-10 w-10 object-contain transition-transform group-hover:scale-110"
             />
-            <h1 className="text-2xl md:text-3xl font-heading font-extrabold animated-dark-gradient">
-              Shree Prakaram Caterers
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Shree Praakaaram Caterers
             </h1>
+          </NavLink>
 
-          </div>
-
-          {/* Desktop Navigation */}
+          {/* Desktop */}
           <div className="hidden md:flex items-center gap-8">
             {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`relative text-[17px] font-semibold transition-colors duration-200 ${
-                  activeSection === item.id
-                    ? "text-amber-700 after:w-full"
-                    : "text-[#4B3A2A] hover:text-amber-700 after:w-0"
-                } after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:bg-amber-600 after:transition-all after:duration-300`}
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={({ isActive }) =>
+                  `relative text-[17px] font-semibold transition ${
+                    isActive
+                      ? "text-amber-700 after:w-full"
+                      : "text-[#4B3A2A] hover:text-amber-700 after:w-0"
+                  } after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:bg-amber-600 after:transition-all`
+                }
               >
                 {item.label}
-              </button>
+              </NavLink>
             ))}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden text-[#4B3A2A] hover:text-amber-600"
+            className="md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X /> : <Menu />}
@@ -105,19 +69,16 @@ const Navigation = () => {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 bg-[#FFF9E6]/95 rounded-xl shadow-md mt-2 border border-amber-500/30 backdrop-blur-md">
+          <div className="md:hidden py-4 bg-[#FFF9E6] rounded-xl shadow-md mt-2">
             {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`block w-full text-left px-6 py-3 font-medium transition-colors ${
-                  activeSection === item.id
-                    ? "text-amber-700 bg-amber-50"
-                    : "text-[#4B3A2A] hover:text-amber-700 hover:bg-amber-50"
-                }`}
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block px-6 py-3 text-[#4B3A2A] hover:text-amber-700"
               >
                 {item.label}
-              </button>
+              </NavLink>
             ))}
           </div>
         )}

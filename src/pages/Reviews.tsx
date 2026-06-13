@@ -12,29 +12,45 @@ const Reviews = () => {
     text: "",
   });
 
-  // Fetch reviews from backend on mount
+  // 🔥 FETCH REVIEWS
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/reviews");
-        if (res.ok) {
-          const data = await res.json();
-          setAllReviews(data);
-        } else {
+        const res = await fetch("https://shreeprakarambackend-10.onrender.com/api/reviews");          
+
+        if (!res.ok) {
           toast.error("Failed to load reviews.");
+          return;
         }
+
+        const data = await res.json();
+
+        console.log("API DATA:", data); // 👈 DEBUG
+
+        // ✅ HANDLE BOTH CASES (array or object)
+        if (Array.isArray(data)) {
+          setAllReviews(data);
+        } else if (Array.isArray(data.reviews)) {
+          setAllReviews(data.reviews);
+        } else {
+          setAllReviews([]); // fallback
+        }
+
       } catch (error) {
         console.error(error);
         toast.error("Error fetching reviews.");
       }
     };
+
     fetchReviews();
   }, []);
 
+  // 🔄 HANDLE INPUT
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // 🚀 SUBMIT REVIEW
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -52,7 +68,10 @@ const Reviews = () => {
 
       if (res.ok) {
         const newReview = await res.json();
-        setAllReviews([newReview, ...allReviews]);
+
+        // ✅ Always keep array safe
+        setAllReviews((prev) => [newReview, ...(prev || [])]);
+
         setForm({ name: "", event: "", rating: 5, text: "" });
         toast.success("Review submitted successfully!");
       } else {
@@ -67,47 +86,57 @@ const Reviews = () => {
   return (
     <section id="reviews" className="py-24 bg-card">
       <div className="container mx-auto px-4">
-        {/* Heading */}
+
+        {/* 🏷 Heading */}
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-4xl md:text-5xl font-heading font-bold text-primary">
             Client Testimonials
           </h2>
           <div className="h-1 w-32 bg-gradient-accent mx-auto rounded-full" />
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Hear what our satisfied clients have to say about their experiences
+            Hear what our satisfied clients have to say
           </p>
         </div>
 
-        {/* Reviews */}
+        {/* ⭐ REVIEWS LIST */}
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {allReviews.map((review, index) => (
-            <Card
-              key={index}
-              className="border-2 border-border hover:border-primary transition-all duration-300 hover:shadow-elegant"
-            >
-              <CardContent className="p-8">
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: review.rating }).map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-accent text-accent" />
-                  ))}
-                </div>
-                <p className="text-foreground leading-relaxed mb-6 italic">
-                  "{review.text}"
-                </p>
-                <div className="border-t border-border pt-4">
-                  <h4 className="font-heading font-bold text-primary">{review.name}</h4>
-                  <p className="text-sm text-muted-foreground">{review.event}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{review.date}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {Array.isArray(allReviews) && allReviews.length > 0 ? (
+            allReviews.map((review, index) => (
+              <Card key={index} className="border-2 hover:shadow-lg transition">
+                <CardContent className="p-8">
+
+                  {/* ⭐ Stars */}
+                  <div className="flex gap-1 mb-4">
+                    {Array.from({ length: Number(review.rating || 5) }).map((_, i) => (
+                      <Star key={i} className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                    ))}
+                  </div>
+
+                  {/* 💬 Review */}
+                  <p className="mb-4 italic">"{review.text}"</p>
+
+                  {/* 👤 Info */}
+                  <div className="border-t pt-3">
+                    <h4 className="font-bold">{review.name}</h4>
+                    <p className="text-sm text-gray-500">{review.event}</p>
+                    <p className="text-xs text-gray-400">{review.date}</p>
+                  </div>
+
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <p className="text-center col-span-2 text-gray-500">
+              No reviews yet. Be the first to write one!
+            </p>
+          )}
         </div>
 
-        {/* Review Form */}
+        {/* 📝 FORM */}
         <div className="max-w-3xl mx-auto mt-16">
-          <Card className="border-2 border-primary p-6">
+          <Card className="p-6">
             <h3 className="text-2xl font-bold mb-4">Write a Review</h3>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
@@ -118,6 +147,7 @@ const Reviews = () => {
                 className="w-full p-2 border rounded"
                 required
               />
+
               <input
                 type="text"
                 name="event"
@@ -127,16 +157,18 @@ const Reviews = () => {
                 className="w-full p-2 border rounded"
                 required
               />
+
               <textarea
                 name="text"
                 placeholder="Write your review"
                 value={form.text}
                 onChange={handleChange}
                 className="w-full p-2 border rounded"
-                rows="4"
+                rows={4}
                 required
-              ></textarea>
-              <label className="flex items-center gap-2">
+              />
+
+              <div className="flex items-center gap-2">
                 Rating:
                 <select
                   name="rating"
@@ -145,10 +177,13 @@ const Reviews = () => {
                   className="border rounded p-1"
                 >
                   {[5, 4, 3, 2, 1].map((r) => (
-                    <option key={r} value={r}>{r}</option>
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
                   ))}
                 </select>
-              </label>
+              </div>
+
               <button
                 type="submit"
                 className="bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark"
@@ -159,24 +194,17 @@ const Reviews = () => {
           </Card>
         </div>
 
-        {/* Average Rating */}
+        {/* 📊 AVERAGE */}
         <div className="mt-16 text-center">
-          <Card className="inline-block border-2 border-primary bg-gradient-hero">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="h-8 w-8 fill-accent text-accent" />
-                  ))}
-                </div>
-                <span className="text-4xl font-heading font-bold text-primary">5.0</span>
-              </div>
-              <p className="text-foreground text-lg">
-                Average rating from {allReviews.length}+ satisfied clients
+          <Card className="inline-block p-6">
+            <CardContent>
+              <p className="text-lg">
+                {allReviews.length} satisfied clients ⭐
               </p>
             </CardContent>
           </Card>
         </div>
+
       </div>
     </section>
   );
