@@ -39,7 +39,7 @@ const Enquiry = () => {
     }
 
     try {
-      const res = await fetch("https://shreeprakarambackend-10.onrender.com/api/enquiries", {
+      const res = await fetch("https://api.shreepraakaaramcaterers.in/api/enquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
