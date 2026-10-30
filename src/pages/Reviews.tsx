@@ -16,7 +16,7 @@ const Reviews = () => {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch("https://shreeprakarambackend-10.onrender.com/api/reviews");          
+        const res = await fetch("https://api.shreepraakaaramcaterers.in/api/reviews");        
 
         if (!res.ok) {
           toast.error("Failed to load reviews.");
